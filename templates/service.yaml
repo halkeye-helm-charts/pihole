@@ -5,7 +5,10 @@ metadata:
   name: {{ include "pihole.fullname" . }}
   annotations:
     kubernetes.io/allow-mixed-protocol: "true"
-    metallb.universe.tf/allow-shared-ip: "true"
+    metallb.universe.tf/allow-shared-ip: {{ include "pihole.fullname" . }}
+{{- if .Values.service.annotations }}
+{{ toYaml .Values.service.annotations | indent 4 }}
+{{- end }}
   labels:
     app.kubernetes.io/name: {{ include "pihole.name" . }}
     helm.sh/chart: {{ include "pihole.chart" . }}
@@ -13,6 +16,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   type: {{ .Values.service.type }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   {{ if .Values.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{ end }}
@@ -29,9 +33,16 @@ spec:
       targetPort: dns1
       protocol: TCP
       name: dns1
+      {{ if not (eq .Values.service.type "LoadBalancer") }}
+    - port: {{ .Values.service.dns.port }}
+      targetPort: dns2
+      protocol: UDP
+      name: dns2
+      {{ end }}
   selector:
     app.kubernetes.io/name: {{ include "pihole.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+{{ if eq .Values.service.type "LoadBalancer" }}
 ---
 apiVersion: v1
 kind: Service
@@ -39,7 +50,10 @@ metadata:
   name: {{ include "pihole.fullname" . }}-udp
   annotations:
     kubernetes.io/allow-mixed-protocol: "true"
-    metallb.universe.tf/allow-shared-ip: "true"
+    metallb.universe.tf/allow-shared-ip: {{ include "pihole.fullname" . }}
+{{- if .Values.service.annotations }}
+{{ toYaml .Values.service.annotations | indent 4 }}
+{{- end }}
   labels:
     app.kubernetes.io/name: {{ include "pihole.name" . }}
     helm.sh/chart: {{ include "pihole.chart" . }}
@@ -47,6 +61,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   type: {{ .Values.service.type }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   {{ if .Values.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{ end }}
@@ -58,3 +73,4 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "pihole.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+{{ end }}

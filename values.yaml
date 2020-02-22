@@ -6,14 +6,15 @@ replicaCount: 1
 
 image:
   repository: pihole/pihole
-  tag: 4.1.1
+  tag: 4.3.2-1
   pullPolicy: Always
 
 nameOverride: ""
 fullnameOverride: ""
 
 service:
-  type: NodePort
+  externalTrafficPolicy: Local
+  type: ClusterIP
   dns:
     port: 53
   http:

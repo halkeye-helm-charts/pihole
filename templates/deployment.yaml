@@ -15,6 +15,8 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "pihole.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
@@ -31,6 +33,8 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          stdin: true
+          tty: true
           securityContext:
             capabilities:
               add:
@@ -63,6 +67,10 @@ spec:
             - name: dns2
               containerPort: 53
               protocol: UDP
+          volumeMounts:
+            - mountPath: "/etc/dnsmasq.d/05-custom.conf"
+              name: customconfig
+              subPath: 05-custom.conf
           livenessProbe:
             httpGet:
               path: /
@@ -73,6 +81,10 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: customconfig
+          configMap:
+            name: {{ template "pihole.fullname" . }}-customconfig
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
