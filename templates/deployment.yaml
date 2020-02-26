@@ -3,10 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "pihole.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "pihole.name" . }}
-    helm.sh/chart: {{ include "pihole.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "pihole.labels" . | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:

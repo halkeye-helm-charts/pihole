@@ -1,15 +1,16 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "pihole.fullname" . -}}
 {{- $ingressPaths := .Values.ingress.paths -}}
+{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
 apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    app.kubernetes.io/name: {{ include "pihole.name" . }}
-    helm.sh/chart: {{ include "pihole.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "pihole.labels" . | indent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -29,7 +30,7 @@ spec:
     - host: pi.hole
       http:
         paths:
-          - path: 
+          - path:
             backend:
               serviceName: {{ $fullName }}
               servicePort: http
