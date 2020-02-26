@@ -58,7 +58,7 @@ spec:
             - name: https
               containerPort: 443
               protocol: TCP
-            - name: dns
+            - name: dns1
               containerPort: 53
               protocol: TCP
             - name: dns2
