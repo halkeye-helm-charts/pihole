@@ -69,13 +69,21 @@ spec:
               name: customconfig
               subPath: 05-custom.conf
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            exec:
+              command:
+                - "dig"
+                - "+time=1"
+                - "+tries=5"
+                - "@127.0.0.1"
+                - "localhost"
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            exec:
+              command:
+                - "dig"
+                - "+time=1"
+                - "+tries=5"
+                - "@127.0.0.1"
+                - "localhost"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
