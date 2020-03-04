@@ -73,8 +73,13 @@ spec:
               protocol: UDP
           volumeMounts:
             - mountPath: "/etc/dnsmasq.d/05-custom.conf"
-              name: customconfig
+              name: config
               subPath: 05-custom.conf
+            {{- if and (.Values.pihole.whitelist) (gt (len .Values.pihole.whitelist) 0) }}
+            - mountPath: "/etc/pihole/whitelist.txt"
+              name: config
+              subPath: whitelist.txt
+            {{- end }}
           livenessProbe:
             exec:
               command:
@@ -94,9 +99,9 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
-        - name: customconfig
+        - name: config
           configMap:
-            name: {{ template "pihole.fullname" . }}-customconfig
+            name: {{ template "pihole.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

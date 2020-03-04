@@ -26,6 +26,7 @@ pihole:
   tz: UTC
   virtual_host:
   password:
+  whitelist: []
 
 ingress:
   enabled: false
